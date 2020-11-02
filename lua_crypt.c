@@ -12,10 +12,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -45,39 +45,8 @@ static int
 lua_crypt(lua_State *L)
 {
 	const char *password, *hash;
-	char *ret;
-	int nargs;
-
-	nargs = lua_gettop(L);
-	if (nargs != 2) {
-		return luaL_error(L, "expecting 2 arguments, but got %d", nargs);
-	}
-
-	password = luaL_checkstring(L, 1);
-	hash = luaL_checkstring(L, 2);
-	ret = crypt(password, hash);
-	if (ret == NULL) {
-		return luaL_error(L, "fail to crypt");
-	}
-
-	lua_pushstring(L, ret);
-	free(ret);
-
-	return (1);
-}
-
-static int
-lua_crypt_r(lua_State *L)
-{
-	const char *password, *hash;
 	struct crypt_data *buffer;
 	char *ret;
-	int nargs;
-
-	nargs = lua_gettop(L);
-	if (nargs != 2) {
-		return luaL_error(L, "expecting 2 arguments, but got %d", nargs);
-	}
 
 	buffer = malloc(sizeof(*buffer));
 	if (buffer == NULL) {
@@ -94,7 +63,6 @@ lua_crypt_r(lua_State *L)
 	}
 
 	lua_pushstring(L, ret);
-	free(ret);
 	free(buffer);
 
 	return (1);
@@ -103,12 +71,7 @@ lua_crypt_r(lua_State *L)
 static int
 lua_set_format(lua_State *L)
 {
-	int nargs, ret, format;
-
-	nargs = lua_gettop(L);
-	if (nargs != 1) {
-		return luaL_error(L, "expecting 1 argument, but got %d", nargs);
-	}
+	int ret, format;
 
 	format = luaL_checkinteger(L, 1);
 	switch(format) {
@@ -141,12 +104,6 @@ static int
 lua_get_format(lua_State *L)
 {
 	const char *format;
-	int nargs;
-
-	nargs = lua_gettop(L);
-	if (nargs != 0) {
-		return luaL_error(L, "expecting zero argument, but got %d", nargs);
-	}
 
 	format = crypt_get_format();
 	lua_pushstring(L, format);
@@ -154,23 +111,8 @@ lua_get_format(lua_State *L)
 }
 
 static const struct luaL_Reg l_crypt[] = {
-	/** 
-	 * @param name	jail name (string)
-	 * @return	jail id (integer)
-	 *		or nil, error (string) on error
-	 */
 	{"crypt", lua_crypt},
-	{"crypt_r", lua_crypt_r},
-	/** Get name of a jail by id.
-	 * @param jid	jail id (integer)
-	 * @return	jail name (string)
-	 *		or nil, error (string) on error
-	 */
 	{"set_format", lua_set_format},
-	/** Get a list of all known jail parameters.
-	 * @return	list of jail parameter names (table of strings)
-	 *		or nil, error (string) on error
-	 */
 	{"get_format", lua_get_format},
 	{NULL, NULL}
 };
